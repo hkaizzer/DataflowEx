@@ -50,7 +50,7 @@ namespace Gridsum.DataflowEx
             var blockGenericType = block.GetType().GetGenericTypeDefinition();
             if (blockGenericType == typeof(TransformBlock<,>) || blockGenericType == typeof(TransformManyBlock<,>))
             {
-                return new Tuple<int, int>(b.InputCount, b.OutputCount);
+                return new Tuple<int, int>( b.InputCount,  b.OutputCount);
             }
 
             if (blockGenericType == typeof(ActionBlock<>))

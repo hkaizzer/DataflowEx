@@ -18,7 +18,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
         private Dataflow<TIn, TIn> m_before;
         private Dataflow<TOut, TOut> m_after;
         private Dataflow<TIn, TOut> m_Dataflow;
-
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         public AutoCompleteWrapper(Dataflow<TIn, TOut> dataflow, TimeSpan processTimeout, DataflowOptions options) : base(options)
         {
             m_Dataflow = dataflow;
@@ -49,7 +49,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
                 }
                 else
                 {
-                    LogHelper.Logger.WarnFormat("Empty guid found in output. You may have forgotten to set it.");
+                    _logger.Warn("Empty guid found in output. You may have forgotten to set it.");
                 }
                 
                 return @out;
@@ -66,7 +66,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
 
         void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            LogHelper.Logger.InfoFormat("Auto complete timer elapsed. Shutting down the inner dataflow ({0})..", m_Dataflow.FullName);
+            _logger.Info("Auto complete timer elapsed. Shutting down the inner dataflow ({0})..", m_Dataflow.FullName);
 
             m_before.Complete(); //pass completion down to the chain
         }

@@ -46,6 +46,9 @@ namespace Gridsum.DataflowEx
 
     internal abstract class DependencyBase : IDataflowDependency
     {
+
+        protected static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
         protected readonly Dataflow m_host;
         private readonly Action<Task> m_completionCallback;
         public abstract IEnumerable<IDataflowBlock> Blocks { get; }
@@ -114,13 +117,12 @@ namespace Gridsum.DataflowEx
                             }
                             catch (Exception e)
                             {
-                                LogHelper.Logger.Error(
-                                    h =>
-                                    h(
+                                _logger.Error(e,
+                                    
                                         "{0} Error when callback {1} on its completion",
                                         m_host.FullName,
-                                        this.DisplayName),
-                                    e);
+                                        this.DisplayName
+                                    );
                                 tcs.SetException(e);
                                 m_host.Fault(e);
                             }

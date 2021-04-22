@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Gridsum.DataflowEx.AutoCompletion;
 using Gridsum.DataflowEx.Exceptions;
-using Microsoft.CSharp.RuntimeBinder;
+
 
 namespace Gridsum.DataflowEx
 {

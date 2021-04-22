@@ -16,6 +16,7 @@ namespace Gridsum.DataflowEx
     /// <typeparam name="T">The input and output type of the data flow</typeparam>
     public class DataBroadcaster<T> : Dataflow<T, T>
     {
+
         //todo: fix race condition
         private ImmutableList<Dataflow<T, T>> m_copyBuffers;
 
@@ -108,7 +109,7 @@ namespace Gridsum.DataflowEx
                 this.LinkCopyTo(other);
             }
 
-            LogHelper.Logger.InfoFormat("{0} now links to its {1}th target ({2})", this.FullName, m_copyBuffers.Count + 1, other.Name);
+            _logger.Info("{0} now links to its {1}th target ({2})", this.FullName, m_copyBuffers.Count + 1, other.Name);
             return other;
         }
     }

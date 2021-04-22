@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridsum.DataflowEx", "Gridsum.DataflowEx\Gridsum.DataflowEx.csproj", "{A4FD6288-AE2E-4C28-B7D4-D317D1601E86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gridsum.DataflowEx", "Gridsum.DataflowEx\Gridsum.DataflowEx.csproj", "{A4FD6288-AE2E-4C28-B7D4-D317D1601E86}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{77014771-4A9D-4A59-AB9D-B587668F5233}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,11 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{770147
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridsum.DataflowEx.Test", "Gridsum.DataflowEx.Test\Gridsum.DataflowEx.Test.csproj", "{E5089AD2-0BE8-48E8-B361-A4C38B016C76}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridsum.DataflowEx.TestHelper", "Gridsum.DataflowEx.TestHelper\Gridsum.DataflowEx.TestHelper.csproj", "{69654373-6EC8-4005-8441-6F3B8368AEF8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridsum.DataflowEx.Demo", "Gridsum.DataflowEx.Demo\Gridsum.DataflowEx.Demo.csproj", "{6DE0770B-8795-4F64-9AEE-4BD2550009FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gridsum.DataflowEx.Test", "Gridsum.DataflowEx.Test\Gridsum.DataflowEx.Test.csproj", "{E5089AD2-0BE8-48E8-B361-A4C38B016C76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,16 +28,11 @@ Global
 		{E5089AD2-0BE8-48E8-B361-A4C38B016C76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5089AD2-0BE8-48E8-B361-A4C38B016C76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5089AD2-0BE8-48E8-B361-A4C38B016C76}.Release|Any CPU.Build.0 = Release|Any CPU
-		{69654373-6EC8-4005-8441-6F3B8368AEF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{69654373-6EC8-4005-8441-6F3B8368AEF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{69654373-6EC8-4005-8441-6F3B8368AEF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{69654373-6EC8-4005-8441-6F3B8368AEF8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6DE0770B-8795-4F64-9AEE-4BD2550009FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6DE0770B-8795-4F64-9AEE-4BD2550009FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6DE0770B-8795-4F64-9AEE-4BD2550009FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6DE0770B-8795-4F64-9AEE-4BD2550009FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {35EA0E85-7571-4D1C-A473-1531E576C357}
 	EndGlobalSection
 EndGlobal

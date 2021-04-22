@@ -11,7 +11,6 @@ namespace Gridsum.DataflowEx
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Common.Logging;
 
     public static class Utils
     {
@@ -70,11 +69,11 @@ namespace Gridsum.DataflowEx
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static ILog GetNamespaceLogger()
+        public static NLog.ILogger GetNamespaceLogger()
         {
             var frame = new StackFrame(1);
             var callingMethod = frame.GetMethod();
-            return LogManager.GetLogger(callingMethod.DeclaringType.Namespace);
+            return NLog.LogManager.GetCurrentClassLogger();;
         }
     }
 }

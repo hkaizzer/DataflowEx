@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Text.RegularExpressions;
 
 namespace Gridsum.DataflowEx.PatternMatch
@@ -53,9 +54,9 @@ namespace Gridsum.DataflowEx.PatternMatch
                 case MatchType.RegexMatch:
                     return Regex.IsMatch(input);
                 default:
-                    if (LogHelper.Logger.IsWarnEnabled)
+                    if (_logger.IsEnabled(LogLevel.Warn))
                     {
-                        LogHelper.Logger.WarnFormat("Invalid given enum value MatchType {0}. Using 'Contains' instead.", MatchType);
+                        _logger.Warn("Invalid given enum value MatchType {0}. Using 'Contains' instead.", MatchType);
                     }
                     return input.Contains(MatchPattern);
             }
