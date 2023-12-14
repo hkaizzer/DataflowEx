@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Gridsum.DataflowEx.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx
 {
@@ -47,7 +48,7 @@ namespace Gridsum.DataflowEx
     internal abstract class DependencyBase : IDataflowDependency
     {
 
-        protected static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        protected readonly ILogger<DependencyBase> _logger;
 
         protected readonly Dataflow m_host;
         private readonly Action<Task> m_completionCallback;
@@ -60,11 +61,12 @@ namespace Gridsum.DataflowEx
 
         public DependencyKind Kind { get; private set; }
 
-        protected DependencyBase(Dataflow host, Action<Task> completionCallback, DependencyKind kind)
+        protected DependencyBase(Dataflow host, Action<Task> completionCallback, DependencyKind kind, ILogger<DependencyBase> logger = null)
         {
             m_host = host;
             m_completionCallback = completionCallback;
             this.Kind = kind;
+            _logger = logger;
         }
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace Gridsum.DataflowEx
                             }
                             catch (Exception e)
                             {
-                                _logger.Error(e,
+                                _logger?.LogError(e,
                                     
                                         "{0} Error when callback {1} on its completion",
                                         m_host.FullName,

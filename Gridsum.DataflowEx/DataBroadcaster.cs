@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx
 {
@@ -109,7 +110,7 @@ namespace Gridsum.DataflowEx
                 this.LinkCopyTo(other);
             }
 
-            _logger.Info("{0} now links to its {1}th target ({2})", this.FullName, m_copyBuffers.Count + 1, other.Name);
+            _logger?.LogInformation("{0} now links to its {1}th target ({2})", this.FullName, m_copyBuffers.Count + 1, other.Name);
             return other;
         }
     }

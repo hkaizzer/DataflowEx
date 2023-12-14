@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx.PatternMatch
 {
@@ -12,8 +13,6 @@ namespace Gridsum.DataflowEx.PatternMatch
     /// <typeparam name="T"></typeparam>
     public abstract class MatchConditionBase<T> : IMatchCondition<T>
     {
-        protected static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
         public abstract bool Matches(T input);
 
         public IMatchCondition<T> MatchesExact(T input)
