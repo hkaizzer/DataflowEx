@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Gridsum.DataflowEx.Exceptions;
 using Gridsum.DataflowEx.PatternMatch;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx
 {
@@ -23,7 +24,7 @@ namespace Gridsum.DataflowEx
     /// </summary>
     public class Dataflow : IDataflow
     {
-        protected static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+        protected readonly ILogger<Dataflow> _logger;
 
         private static ConcurrentDictionary<string, IntHolder> s_nameDict = new ConcurrentDictionary<string, IntHolder>();
         protected internal readonly DataflowOptions m_dataflowOptions;
@@ -44,7 +45,7 @@ namespace Gridsum.DataflowEx
         /// Constructs a Dataflow instance
         /// </summary>
         /// <param name="dataflowOptions">The dataflow option object</param>
-        public Dataflow(DataflowOptions dataflowOptions)
+        public Dataflow(DataflowOptions dataflowOptions, ILogger<Dataflow> logger = null)
         {
             m_dataflowOptions = dataflowOptions;
             m_defaultLinkOption = new DataflowLinkOptions() { PropagateCompletion = true };
@@ -54,13 +55,13 @@ namespace Gridsum.DataflowEx
             int count = s_nameDict.GetOrAdd(friendlyName, new IntHolder()).Increment();
             m_defaultName = friendlyName + count;
             m_isFaulted = 0;
-
+            _logger = logger;
             if (m_dataflowOptions.FlowMonitorEnabled || m_dataflowOptions.BlockMonitorEnabled)
             {
                 StartPerformanceMonitorAsync();
             }
         }
-
+        
         /// <summary>
         /// Display name of the dataflow
         /// </summary>
@@ -253,7 +254,7 @@ namespace Gridsum.DataflowEx
             {
                 if (allowDuplicate)
                 {
-                    _logger.Debug(
+                    _logger?.LogDebug(
                         "Duplicate child registration ignored in {0}: {1}",
                         this.FullName,
                         childWrapper.DisplayName);
@@ -312,7 +313,7 @@ namespace Gridsum.DataflowEx
 
                         if (bufferStatus.Total() != 0 || m_dataflowOptions.PerformanceMonitorMode == DataflowOptions.PerformanceLogMode.Verbose)
                         {
-                            _logger.Debug("{0} has {1} todo items (in:{2}, out:{3}) at this moment.", this.FullName, bufferStatus.Total(), bufferStatus.Item1, bufferStatus.Item2);
+                            _logger?.LogDebug("{0} has {1} todo items (in:{2}, out:{3}) at this moment.", this.FullName, bufferStatus.Total(), bufferStatus.Item1, bufferStatus.Item2);
                         }
                     }
 
@@ -327,11 +328,11 @@ namespace Gridsum.DataflowEx
                             
                             if (child.Completion.IsCompleted && verboseMode)
                             {
-                                _logger.Debug("{0} is completed");
+                                _logger?.LogDebug("{0} is completed");
                             }
                             else if (bufferStatus.Total() != 0 || verboseMode)
                             {
-                                _logger.Debug("{0} has {1} todo items (in:{2}, out:{3}) at this moment. ", c.DisplayName, bufferStatus.Total(), bufferStatus.Item1, bufferStatus.Item2);
+                                _logger?.LogDebug("{0} has {1} todo items (in:{2}, out:{3}) at this moment. ", c.DisplayName, bufferStatus.Total(), bufferStatus.Item1, bufferStatus.Item2);
                             }
                         }
                     }
@@ -343,7 +344,7 @@ namespace Gridsum.DataflowEx
             }
             catch (Exception e)
             {
-                _logger.Error(e,"{0} Error occurred in my performance monitor loop. Monitoring stopped.",e, this.FullName);
+                _logger?.LogError(e,"{0} Error occurred in my performance monitor loop. Monitoring stopped.",e, this.FullName);
             }
         }
 
@@ -367,7 +368,7 @@ namespace Gridsum.DataflowEx
             //waiting until some children is registered
             if (m_children.Count == 0)
             {
-                _logger.Warn("{0} still has no children. Will check again soon.", this.FullName);
+                _logger?.LogWarning("{0} still has no children. Will check again soon.", this.FullName);
                 await Task.Delay(m_dataflowOptions.MonitorInterval).ConfigureAwait(false);
 
                 if (m_children.Count == 0)
@@ -397,11 +398,11 @@ namespace Gridsum.DataflowEx
 
                 if (exception == null)
                 {
-                    _logger.Info(string.Format("{0} completed", this.FullName));    
+                    _logger?.LogInformation(string.Format("{0} completed", this.FullName));    
                 }
                 else
                 {
-                    _logger.Info(string.Format("{0} completed with error", this.FullName));    
+                    _logger?.LogInformation(string.Format("{0} completed with error", this.FullName));    
                     throw new AggregateException(exception);
                 }                
             }
@@ -446,17 +447,17 @@ namespace Gridsum.DataflowEx
         {
             if (Interlocked.CompareExchange(ref m_isFaulted, 1, 0) != 0)
             {
-                _logger.Debug("{0} is already faulted or faulting. Skip its downward error propagation.", exception, this.FullName);
+                _logger?.LogDebug("{0} is already faulted or faulting. Skip its downward error propagation.", exception, this.FullName);
                 return;
             }
 
             if (exception is PropagatedException)
             {
-                _logger.Warn("{0} External exception occur. Shutting down my children...", exception, this.FullName);    
+                _logger?.LogWarning("{0} External exception occur. Shutting down my children...", exception, this.FullName);    
             }
             else
             {
-                _logger.Error(exception,"{0} Exception occur. Shutting down my children...", exception, this.FullName);    
+                _logger?.LogError(exception,"{0} Exception occur. Shutting down my children...", exception, this.FullName);    
             }
             
             foreach (IDataflowDependency child in m_children)
@@ -464,7 +465,7 @@ namespace Gridsum.DataflowEx
                 if (!child.Completion.IsCompleted)
                 {
                     string msg = string.Format("{1} is shutting down its child {0}", child.DisplayName, this.FullName);
-                    _logger.Warn(msg);
+                    _logger?.LogWarning(msg);
 
                     //just pass on PropagatedException (do not use original exception here)
                     if (exception is PropagatedException)
@@ -520,7 +521,7 @@ namespace Gridsum.DataflowEx
         public virtual void Complete()
         {
             //inheritors should override this method 
-            _logger.Warn("{0} doesn't know how to explicitly complete. Perform a no-op instead.", this.FullName);
+            _logger?.LogWarning("{0} doesn't know how to explicitly complete. Perform a no-op instead.", this.FullName);
         }
 
         //Linkd MY block to OHTER dataflow
@@ -552,12 +553,12 @@ namespace Gridsum.DataflowEx
 
                 if (otherTask.IsFaulted)
                 {
-                    _logger.Info("{0} Downstream dataflow faulted before I am done. Fault myself.", this.FullName);
+                    _logger?.LogInformation("{0} Downstream dataflow faulted before I am done. Fault myself.", this.FullName);
                     this.Fault(new LinkedDataflowFailedException());
                 }
                 else if (otherTask.IsCanceled)
                 {
-                    _logger.Info("{0} Downstream dataflow canceled before I am done. Cancel myself.", this.FullName);
+                    _logger?.LogInformation("{0} Downstream dataflow canceled before I am done. Cancel myself.", this.FullName);
                     this.Fault(new LinkedDataflowCanceledException());
                 }
             });
@@ -599,7 +600,7 @@ namespace Gridsum.DataflowEx
 
             if (!ImmutableUtils.TryAddOptimistically(ref m_dependencies, dependency))
             {
-                _logger.Warn("A dependency registration is ignored by {0} as it is already a dependency: {1}", this.FullName, dependency.DisplayName);
+                _logger?.LogWarning("A dependency registration is ignored by {0} as it is already a dependency: {1}", this.FullName, dependency.DisplayName);
             }
 
             if (isFirstDependency)
@@ -621,7 +622,7 @@ namespace Gridsum.DataflowEx
                             {
                                 if (m_dependencies.Count > 1)
                                 {
-                                    _logger.Info("{0} All of my dependencies are done. Completing myself.", this.FullName);
+                                    _logger?.LogInformation("{0} All of my dependencies are done. Completing myself.", this.FullName);
                                 }
                                 this.Complete();
                             }
@@ -630,7 +631,7 @@ namespace Gridsum.DataflowEx
             }
             else
             {
-                _logger.Info("{0} now has {1} dependencies. (Added {2})", this.FullName, m_dependencies.Count, dependency.DisplayName);
+                _logger?.LogInformation("{0} now has {1} dependencies. (Added {2})", this.FullName, m_dependencies.Count, dependency.DisplayName);
             }
         }
 
@@ -645,10 +646,12 @@ namespace Gridsum.DataflowEx
     /// </summary>
     public abstract class Dataflow<TIn> : Dataflow, IDataflow<TIn>
     {
+        protected Dataflow(DataflowOptions dataflowOptions, ILogger<Dataflow> logger) : base(dataflowOptions, logger)
+        {
+        }
         protected Dataflow(DataflowOptions dataflowOptions) : base(dataflowOptions)
         {
         }
-
         /// <summary>
         /// The typed input block of this dataflow
         /// </summary>
@@ -674,7 +677,7 @@ namespace Gridsum.DataflowEx
                         }
                         catch (Exception e)
                         {
-                            _logger.Warn(
+                            _logger?.LogWarning(
                                 "{0} Pulled and posted {1} {2}s to {3} before an exception",
                                 this.FullName,
                                 count,
@@ -684,7 +687,7 @@ namespace Gridsum.DataflowEx
                             throw;
                         }
 
-                        _logger.Info(
+                        _logger?.LogInformation(
                             "{0} Successfully pulled and posted {1} {2}s to {3}.",
                             this.FullName,
                             count,
@@ -729,11 +732,11 @@ namespace Gridsum.DataflowEx
             try
             {
                 count = await this.PullFromAsync(enumerable, cts.Token).ConfigureAwait(false);
-                _logger.Info("{0} Finished reading from enumerable and posting to the dataflow.", this.FullName);
+                _logger?.LogInformation("{0} Finished reading from enumerable and posting to the dataflow.", this.FullName);
             }
             catch (OperationCanceledException oce)
             {
-                _logger.Info("{0} Reading from enumerable canceled halfway. Possibly there is something wrong with dataflow processing.", this.FullName);
+                _logger?.LogInformation("{0} Reading from enumerable canceled halfway. Possibly there is something wrong with dataflow processing.", this.FullName);
                 throw;
             }
 
@@ -751,7 +754,7 @@ namespace Gridsum.DataflowEx
         /// </summary>
         public async Task SignalAndWaitForCompletionAsync()
         {
-            _logger.Info("{0} Telling myself there is no more input and wait for children completion", this.FullName);
+            _logger?.LogInformation("{0} Telling myself there is no more input and wait for children completion", this.FullName);
             this.Complete(); //no more input
             await this.CompletionTask.ConfigureAwait(false);
         }
@@ -972,7 +975,7 @@ namespace Gridsum.DataflowEx
             var actionBlock = new ActionBlock<TOut>(
                 (survivor) =>
                     {
-                        _logger.Error(
+                        _logger?.LogError(
                             "{0} This is my error destination. Data should not arrive here: {1}", 
                             this.FullName, 
                             survivor);

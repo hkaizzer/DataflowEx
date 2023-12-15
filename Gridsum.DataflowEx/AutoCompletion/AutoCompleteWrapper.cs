@@ -5,6 +5,7 @@ using System.Text;
 using System.Timers;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx.AutoCompletion
 {
@@ -18,7 +19,6 @@ namespace Gridsum.DataflowEx.AutoCompletion
         private Dataflow<TIn, TIn> m_before;
         private Dataflow<TOut, TOut> m_after;
         private Dataflow<TIn, TOut> m_Dataflow;
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
         public AutoCompleteWrapper(Dataflow<TIn, TOut> dataflow, TimeSpan processTimeout, DataflowOptions options) : base(options)
         {
             m_Dataflow = dataflow;
@@ -26,7 +26,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
             m_timer = new Timer();
             m_timer.Interval = m_processTimeout.TotalMilliseconds;
             m_timer.Elapsed += OnTimerElapsed;
-
+            
             var before = new TransformBlock<TIn, TIn>(@in =>
             {
                 if (m_last == null || @in.UniqueId == m_last.Value)
@@ -49,7 +49,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
                 }
                 else
                 {
-                    _logger.Warn("Empty guid found in output. You may have forgotten to set it.");
+                    _logger?.LogWarning("Empty guid found in output. You may have forgotten to set it.");
                 }
                 
                 return @out;
@@ -66,7 +66,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
 
         void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            _logger.Info("Auto complete timer elapsed. Shutting down the inner dataflow ({0})..", m_Dataflow.FullName);
+            _logger?.LogInformation("Auto complete timer elapsed. Shutting down the inner dataflow ({0})..", m_Dataflow.FullName);
 
             m_before.Complete(); //pass completion down to the chain
         }

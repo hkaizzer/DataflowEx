@@ -68,12 +68,6 @@ namespace Gridsum.DataflowEx
             return columns.OfType<DataColumn>().First(c => c.AutoIncrement);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static NLog.ILogger GetNamespaceLogger()
-        {
-            var frame = new StackFrame(1);
-            var callingMethod = frame.GetMethod();
-            return NLog.LogManager.GetCurrentClassLogger();;
-        }
+        
     }
 }

@@ -1,6 +1,6 @@
-﻿using NLog;
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx.PatternMatch
 {
@@ -9,14 +9,18 @@ namespace Gridsum.DataflowEx.PatternMatch
     /// </summary>
 	public class StringMatchCondition : MatchConditionBase<string>
 	{
-	    public StringMatchCondition(string matchPattern, MatchType matchType = MatchType.ExactMatch)
+        private readonly ILogger<StringMatchCondition> _logger;
+
+        public StringMatchCondition(string matchPattern, MatchType matchType = MatchType.ExactMatch, ILogger<StringMatchCondition> logger = null)
 		{
             if (matchPattern == null)
             {
                 throw new ArgumentNullException("matchPattern");
             }
 
-			this.MatchPattern = matchPattern;
+            _logger = logger;
+
+            this.MatchPattern = matchPattern;
 			this.MatchType = matchType;
 			
             if (matchType == MatchType.RegexMatch)
@@ -54,9 +58,9 @@ namespace Gridsum.DataflowEx.PatternMatch
                 case MatchType.RegexMatch:
                     return Regex.IsMatch(input);
                 default:
-                    if (_logger.IsEnabled(LogLevel.Warn))
+                    if (_logger.IsEnabled(LogLevel.Warning))
                     {
-                        _logger.Warn("Invalid given enum value MatchType {0}. Using 'Contains' instead.", MatchType);
+                        _logger.LogWarning("Invalid given enum value MatchType {0}. Using 'Contains' instead.", MatchType);
                     }
                     return input.Contains(MatchPattern);
             }

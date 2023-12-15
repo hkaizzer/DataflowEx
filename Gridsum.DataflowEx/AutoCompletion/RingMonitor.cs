@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx.AutoCompletion
 {
@@ -13,10 +14,10 @@ namespace Gridsum.DataflowEx.AutoCompletion
         private readonly IRingNode[] m_ringNodes;
         private readonly Lazy<string> m_lazyDisplayName;
         private IHeartbeatNode m_hb;
-        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-        public RingMonitor(Dataflow host, IRingNode[] ringNodes)
+        private readonly ILogger<RingMonitor> _logger;
+        public RingMonitor(Dataflow host, IRingNode[] ringNodes, ILogger<RingMonitor> logger = null)
         {
-            
+            _logger = logger;
             if (ringNodes.Length == 0)
             {
                 throw new ArgumentException("The child ring contains nothing");
@@ -56,10 +57,10 @@ namespace Gridsum.DataflowEx.AutoCompletion
        
         public async Task StartMonitoring(Task preTask)
         {
-            _logger?.Info("{0} A ring is set up: {1}", m_host.FullName, DisplayName);
+            _logger?.LogInformation("{0} A ring is set up: {1}", m_host.FullName, DisplayName);
           
             await preTask.ConfigureAwait(false);
-            _logger?.Info("{0} Ring pretask done. Starting check loop for {1}", m_host.FullName, DisplayName);
+            _logger?.LogInformation("{0} Ring pretask done. Starting check loop for {1}", m_host.FullName, DisplayName);
           
 
             while (true)
@@ -70,7 +71,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
                 
                 if (m_hb.NoHeartbeatDuring(() => { empty = this.IsRingEmpty(); }) && empty)
                 {
-                    _logger.Debug("{0} 1st level empty ring check passed for {1}", m_host.FullName, this.DisplayName);
+                    _logger.LogDebug("{0} 1st level empty ring check passed for {1}", m_host.FullName, this.DisplayName);
 
                     bool noHeartbeat = await m_hb.NoHeartbeatDuring(
                         async () =>
@@ -88,7 +89,7 @@ namespace Gridsum.DataflowEx.AutoCompletion
 
                     if (noHeartbeat && empty)
                     {
-                        _logger.Debug("{0} 2nd level empty ring check passed for {1}", m_host.FullName, this.DisplayName);
+                        _logger.LogDebug("{0} 2nd level empty ring check passed for {1}", m_host.FullName, this.DisplayName);
 
                         m_hb.Complete(); //start the completion domino :)
                         break;
@@ -96,12 +97,12 @@ namespace Gridsum.DataflowEx.AutoCompletion
                     else
                     {
                         //batched flow dumped some hidden elements to the flow, go back to the loop
-                        _logger.Debug("{0} New elements entered the ring by batched flows ({1}). Will fall back to 1st level empty ring check.", m_host.FullName, this.DisplayName);
+                        _logger.LogDebug("{0} New elements entered the ring by batched flows ({1}). Will fall back to 1st level empty ring check.", m_host.FullName, this.DisplayName);
                     }
                 }
             }
 
-            _logger.Info("{0} Ring completion detected! Completion triggered on heartbeat node: {1}", m_host.FullName, DisplayName);
+            _logger.LogInformation("{0} Ring completion detected! Completion triggered on heartbeat node: {1}", m_host.FullName, DisplayName);
         }
 
         private bool IsRingEmpty()

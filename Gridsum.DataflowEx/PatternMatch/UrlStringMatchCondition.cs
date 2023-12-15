@@ -1,19 +1,17 @@
-﻿using NLog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using Microsoft.Extensions.Logging;
 
 namespace Gridsum.DataflowEx.PatternMatch
 {
     public class UrlStringMatchCondition : StringMatchCondition
     {
         private readonly bool m_ignoreCase;
+        private readonly ILogger<StringMatchCondition> _logger;
 
-        public UrlStringMatchCondition(string matchPattern, MatchType matchType, bool excludeParam, bool ignoreCase = true) : base(matchPattern, matchType)
+        public UrlStringMatchCondition(string matchPattern, MatchType matchType, bool excludeParam, bool ignoreCase = true, ILogger<StringMatchCondition> logger = null) : base(matchPattern, matchType)
         {
             this.m_ignoreCase = ignoreCase;
+            _logger = logger;
             ExcludeParam = excludeParam;
         }
 
@@ -41,9 +39,9 @@ namespace Gridsum.DataflowEx.PatternMatch
                     case MatchType.RegexMatch:
                         return Regex.IsMatch(input);
                     default:
-                        if (_logger.IsEnabled(LogLevel.Warn))
+                        if (_logger.IsEnabled(LogLevel.Warning))
                         {
-                            _logger.Warn("Invalid given enum value MatchType {0}. Using 'Contains' instead.", MatchType);
+                            _logger.LogWarning("Invalid given enum value MatchType {0}. Using 'Contains' instead.", MatchType);
                         }
                         return input.Contains(MatchPattern);
                 }
